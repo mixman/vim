@@ -3,15 +3,7 @@ filetype plugin indent on
 
 " Default file encoding for new files
 setglobal fenc=utf-8
-" Auto detect file encoding when opening a file. To check what file encoding was
-" selected run ":set fenc" and if you know the auto detection failed and want to
-" force another one run ":edit ++enc=<your_enc>".
-set fencs=utf-8
-" Internal encoding used by vim buffers, help and commands
 set encoding=utf-8
-" Terminal encoding used for input and terminal display
-" Make sure your terminal is configured with the same encoding.
-set tenc=utf-8
 
 " general things
 set nocompatible
@@ -41,6 +33,7 @@ set lbr " wraps at words instead of at characters
 set ignorecase
 set smartcase
 set hlsearch
+set gdefault   " assume the /g flag on :s substitutions to replace all matches in a line:
 
 " autocomplete when opening files. behaves somewhat similarly to bash.
 set wildignore=*.bak,*.swp,*.pyc,*.o,*.obj,*.dll,*.exe
@@ -71,15 +64,15 @@ au BufNewFile *.html 0r ~/.vim/templates/template.html
 au BufWriteCmd *.html,*.css :call Refresh_firefox()
 
 function! Refresh_firefox()
-  if &modified
-    write
-    silent !echo  'vimYo = content.window.pageYOffset;
-                 \ vimXo = content.window.pageXOffset;
-                 \ BrowserReload();
-                 \ content.window.scrollTo(vimXo,vimYo);
-                 \ repl.quit();'  |
-                 \ nc localhost 4242 2>&1 > /dev/null
-  endif
+if &modified
+write
+silent !echo  'vimYo = content.window.pageYOffset;
+			 \ vimXo = content.window.pageXOffset;
+			 \ BrowserReload();
+			 \ content.window.scrollTo(vimXo,vimYo);
+			 \ repl.quit();'  |
+			 \ nc localhost 4242 2>&1 > /dev/null
+endif
 endfunction
 
 " backups and swap files go in .vim
@@ -89,6 +82,8 @@ endfunction
 set backupdir=/tmp//
 set directory=/tmp//
 set nobackup
+set nowb
+set noswapfile
 
 " up/down move between visual lines instead of actual lines when wrapped
 imap <silent> <Down> <C-o>gj
@@ -108,31 +103,31 @@ nmap <silent> <Up> gk
 "inoremap	`  `<Esc>:call QuoteInsertionWrapper('`')<CR>a
 
 function! QuoteInsertionWrapper (quote)
-	let col = col('.')
-	if getline('.')[col-2] !~ '\k' && getline('.')[col] !~ '\k'
-		normal ax
-		exe "normal r".a:quote."h"
-	end
+let col = col('.')
+if getline('.')[col-2] !~ '\k' && getline('.')[col] !~ '\k'
+	normal ax
+	exe "normal r".a:quote."h"
+end
 endfunction
 
 " no need for a separate .gvimrc
 if has('gui_running')
-	colorscheme vimsidian " custom pretty color scheme!
-	set number " show line numbers
-	set lines=60 " new gvim windows are 100x60
-	set columns=150
-	set guifont=Inconsolata\ 12
+colorscheme vimsidian " custom pretty color scheme!
+set number " show line numbers
+set lines=60 " new gvim windows are 100x60
+set columns=150
+set guifont=Monospace\ 10
 
-	set guioptions-=m  " hide the menu bar
-	set guioptions-=T  " hide the toolbar
-	set guioptions-=r  " hide the right-hand scroll bar
-	set guioptions-=l  " hide the left-hand scroll bar
-	" shows/hides menu bar on Ctrl-F1
-	nnoremap <C-F1> :if &go=~#'m'<Bar>set go-=m<Bar>else<Bar>set go+=m<Bar>endif<CR>
+set guioptions-=m  " hide the menu bar
+set guioptions-=T  " hide the toolbar
+set guioptions-=r  " hide the right-hand scroll bar
+set guioptions-=l  " hide the left-hand scroll bar
+" shows/hides menu bar on Ctrl-F1
+nnoremap <C-F1> :if &go=~#'m'<Bar>set go-=m<Bar>else<Bar>set go+=m<Bar>endif<CR>
+set listchars=tab:»·,trail:⋅,nbsp:⋅
 endif
 
 " my settings
-set guifont=Monospace\ 10
 map <C-Tab> :NERDTreeToggle<CR>
 set list
 let mapleader = ","
@@ -140,11 +135,7 @@ let mapleader = ","
 ino jj <esc>
 cno jj <c-c>
 let g:ackprg="ack-grep -H --nocolor --nogroup"
-
-if has('gui_running')
-	"set listchars=tab:▸\ ,eol:¬
-	set listchars=tab:»·,trail:⋅,nbsp:⋅
-endif
+set cursorline
 
 let g:LustyJugglerSuppressRubyWarning = 1
 
@@ -154,7 +145,7 @@ map <leader>v :sp ~/.vimrc<CR><C-W>_
 map <silent> <leader>V :source ~/.vimrc<CR>:filetype detect<CR>:exe ":echo 'vimrc reloaded'"<CR>
 
 " highlight all occurences of word under cursor
-autocmd CursorMoved * silent! exe printf('match IncSearch /\<%s\>/', expand('<cword>'))
+"autocmd CursorMoved * silent! exe printf('match IncSearch /\<%s\>/', expand('<cword>'))
 
 " taglist
 nnoremap <silent> <F4> :TlistToggle<CR>
@@ -172,7 +163,7 @@ let Tlist_Close_On_Select = 1
 let Tlist_Enable_Fold_Column = 0 " Don't Show the fold indicator column in the taglist window.
 let Tlist_Sort_Type = "name"
 
-" <C-W>_ to expand to fullsize, but uncomfortable when diffing
+" window navigation, full-size
 nmap <C-j> <C-W>j<C-W>_
 nmap <C-k> <C-W>k<C-W>_
 nmap <C-l> <C-W>l<C-W>_
@@ -204,9 +195,9 @@ imap <C-V> <ESC><C-V>i
 vmap <C-C> "+y
 command! -nargs=+ Grr execute 'silent grep! -r --exclude=*.pyc --exclude=tags --exclude-dir=*.svn <args>' | copen 33
 map ,b :LustyJuggler<CR>
-autocmd FileType python set omnifunc=pythoncomplete#Complete
+"autocmd FileType python set omnifunc=pythoncomplete#Complete
 "autocmd FileType python set omnifunc=pysmell#Complete
-"autocmd FileType php set omnifunc=phpcomplete#CompletePHP
+autocmd FileType php set omnifunc=phpcomplete#CompletePHP
 set tags=./tags;/
 
 if &diff
@@ -246,3 +237,4 @@ for p in sys.path:
         vim.command(r"set path+=%s" % (p.replace(" ", r"\ ")))
 EOF
 set tags+=$HOME/.vim/tags/python.ctags
+let g:SuperTabDefaultCompletionType = "context"
