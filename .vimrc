@@ -127,7 +127,6 @@ if has('gui_gtk2')
     set guifont=Monospace\ 10
 end
 if has('gui_macvim')
-    set gj <C-]> " somehow C-] doesn't do anything, and spams :.,.+8
     set noantialias
     set guifont=Andale\ Mono:h13
     set cmdheight=3 " (sub-optimal) removes many press ENTER to continue prompts
@@ -145,6 +144,8 @@ let g:ackprg="ack-grep -H --nocolor --nogroup"
 set cursorline
 set hidden "not forced to save before switching buffers
 map <leader>q <esc>:call CleanClose(0)<CR>
+map <S-h> ^
+map <S-l> $
 
 let g:LustyJugglerSuppressRubyWarning = 1
 let g:LustyJugglerShowKeys = 1
@@ -206,7 +207,7 @@ vmap <C-C> "+y
 command! -nargs=+ Grr execute 'silent grep! -r --exclude=*.pyc --exclude=tags --exclude-dir=*.svn <args> *' | copen 33
 map ,b :LustyJuggler<CR>
 "autocmd FileType python set omnifunc=pythoncomplete#Complete
-autocmd FileType python set omnifunc=pysmell#Complete
+"autocmd FileType python set omnifunc=pysmell#Complete
 autocmd FileType php set omnifunc=phpcomplete#CompletePHP
 set tags=./tags;/
 
