@@ -116,8 +116,6 @@ colorscheme vimsidian " custom pretty color scheme!
 set number " show line numbers
 set lines=60 " new gvim windows are 100x60
 set columns=150
-set guifont=Monospace\ 10
-
 set guioptions-=m  " hide the menu bar
 set guioptions-=T  " hide the toolbar
 set guioptions-=r  " hide the right-hand scroll bar
@@ -125,6 +123,15 @@ set guioptions-=l  " hide the left-hand scroll bar
 " shows/hides menu bar on Ctrl-F1
 nnoremap <C-F1> :if &go=~#'m'<Bar>set go-=m<Bar>else<Bar>set go+=m<Bar>endif<CR>
 set listchars=tab:»·,trail:⋅,nbsp:⋅
+if has('gui_gtk2')
+    set guifont=Monospace\ 10
+end
+if has('gui_macvim')
+    set gj <C-]> " somehow C-] doesn't do anything, and spams :.,.+8
+    set noantialias
+    set guifont=Andale\ Mono:h13
+    set cmdheight=3 " (sub-optimal) removes many press ENTER to continue prompts
+end
 endif
 
 " my settings
@@ -136,8 +143,11 @@ ino jj <esc>
 cno jj <c-c>
 let g:ackprg="ack-grep -H --nocolor --nogroup"
 set cursorline
+set hidden "not forced to save before switching buffers
+map <leader>q <esc>:call CleanClose(0)<CR>
 
 let g:LustyJugglerSuppressRubyWarning = 1
+let g:LustyJugglerShowKeys = 1
 
 " ,v brings up my .vimrc
 " ,V reloads it -- making all changes active (have to save first)
@@ -163,7 +173,7 @@ let Tlist_Close_On_Select = 1
 let Tlist_Enable_Fold_Column = 0 " Don't Show the fold indicator column in the taglist window.
 let Tlist_Sort_Type = "name"
 
-" window navigation, full-size
+" window navigation, full-size>_ to expand to fullsize 
 nmap <C-j> <C-W>j<C-W>_
 nmap <C-k> <C-W>k<C-W>_
 nmap <C-l> <C-W>l<C-W>_
@@ -193,15 +203,15 @@ set ofu=syntaxcomplete#Complete
 nmap <C-V> "+gP
 imap <C-V> <ESC><C-V>i
 vmap <C-C> "+y
-command! -nargs=+ Grr execute 'silent grep! -r --exclude=*.pyc --exclude=tags --exclude-dir=*.svn <args>' | copen 33
+command! -nargs=+ Grr execute 'silent grep! -r --exclude=*.pyc --exclude=tags --exclude-dir=*.svn <args> *' | copen 33
 map ,b :LustyJuggler<CR>
 "autocmd FileType python set omnifunc=pythoncomplete#Complete
-"autocmd FileType python set omnifunc=pysmell#Complete
+autocmd FileType python set omnifunc=pysmell#Complete
 autocmd FileType php set omnifunc=phpcomplete#CompletePHP
 set tags=./tags;/
 
 if &diff
-    colorscheme peaksea
+	colorscheme peaksea
 	nmap <C-l> <C-W>l
 	nmap <C-h> <C-W>h
 endif
@@ -216,6 +226,8 @@ noremap <F2> :Mru<CR>
 
 map <leader>r <Plug>TaskList
 nmap 9 <End>
+nmap <leader>1 <C-]>
+nmap <leader>2 g]
 
 " highlight lines over 80 columns
 ":au BufWinEnter * let w:m2=matchadd('ErrorMsg', '\%>80v.\+', -1)
@@ -238,3 +250,31 @@ for p in sys.path:
 EOF
 set tags+=$HOME/.vim/tags/python.ctags
 let g:SuperTabDefaultCompletionType = "context"
+
+" disables cursor keys
+nnoremap <up> <nop>
+nnoremap <down> <nop>
+nnoremap <left> <nop>
+nnoremap <right> <nop>
+inoremap <up> <nop>
+inoremap <down> <nop>
+inoremap <left> <nop>
+inoremap <right> <nop>
+
+function! CleanClose(tosave)
+if (a:tosave == 1)
+    w!
+endif
+let todelbufNr = bufnr("%")
+let newbufNr = bufnr("#")
+if ((newbufNr != -1) && (newbufNr != todelbufNr) && buflisted(newbufNr))
+    exe "b".newbufNr
+else
+    bnext
+endif
+
+if (bufnr("%") == todelbufNr)
+    new
+endif
+exe "bw".todelbufNr
+endfunction
