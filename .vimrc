@@ -36,7 +36,7 @@ set hlsearch
 set gdefault   " assume the /g flag on :s substitutions to replace all matches in a line:
 
 " autocomplete when opening files. behaves somewhat similarly to bash.
-set wildignore=*.bak,*.swp,*.pyc,*.o,*.obj,*.dll,*.exe
+set wildignore=*.bak,*.swp,*.pyc,*.o,*.obj,*.dll,*.exe,*.gif,*.png,*.jpg,*.jpeg
 set wildmenu
 set wildmode=list:longest
 
@@ -146,6 +146,9 @@ set hidden "not forced to save before switching buffers
 map <leader>q <esc>:call CleanClose(0)<CR>
 map <S-h> ^
 map <S-l> $
+set statusline=%F%m%r%h%w\ [%{&ff}]\ %y\ [%l/%L--%c]\ [%p%%]
+set laststatus=2 
+set so=7
 
 let g:LustyJugglerSuppressRubyWarning = 1
 let g:LustyJugglerShowKeys = 1
