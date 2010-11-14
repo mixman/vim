@@ -25,7 +25,7 @@ set ruler
 set showmatch
 runtime macros/matchit.vim " matches if/elseif/else as well as brackets
 
-set scrolloff=3 " scroll before reaching the edge of the page
+set scrolloff=999 " scroll before reaching the edge of the 9age
 
 set lbr " wraps at words instead of at characters
 
@@ -148,7 +148,7 @@ map <S-h> ^
 map <S-l> $
 set statusline=%F%m%r%h%w\ [%{&ff}]\ %y\ [%l/%L--%c]\ [%p%%]
 set laststatus=2 
-set so=7
+set scrolloff=10
 
 let g:LustyJugglerSuppressRubyWarning = 1
 let g:LustyJugglerShowKeys = 1
@@ -265,6 +265,12 @@ inoremap <down> <nop>
 inoremap <left> <nop>
 inoremap <right> <nop>
 
+" cursors for most-used navigation
+map <left> <C-w>h
+map <right> <C-W>l
+map <up> <C-b>\|zz
+map <down> <C-f>\|zz
+
 function! CleanClose(tosave)
 if (a:tosave == 1)
     w!
@@ -282,3 +288,22 @@ if (bufnr("%") == todelbufNr)
 endif
 exe "bw".todelbufNr
 endfunction
+
+" QuickFix
+let g:jah_Quickfix_Win_Height = 10
+" toggles the quickfix window.
+command -bang -nargs=? QFix call QFixToggle(<bang>0)
+function! QFixToggle(forced)
+  if exists("g:qfix_win") && a:forced == 0
+    cclose
+  else
+    execute "copen " . g:jah_Quickfix_Win_Height
+  endif
+endfunction
+" used to track the quickfix window
+augroup QFixToggle
+ autocmd!
+ autocmd BufWinEnter quickfix let g:qfix_win = bufnr("$")
+ autocmd BufWinLeave * if exists("g:qfix_win") && expand("<abuf>") == g:qfix_win | unlet! g:qfix_win | endif
+augroup END
+map <F1> :QFix<CR>
