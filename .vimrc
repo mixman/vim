@@ -125,6 +125,7 @@ nnoremap <C-F1> :if &go=~#'m'<Bar>set go-=m<Bar>else<Bar>set go+=m<Bar>endif<CR>
 set listchars=tab:»·,trail:⋅,nbsp:⋅
 if has('gui_gtk2')
     set guifont=Monospace\ 10
+    set cmdheight=2
 end
 if has('gui_macvim')
     set noantialias
