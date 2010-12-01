@@ -706,14 +706,7 @@ class NameBar
 
 
     def create_items
-      tmpnames = $buffer_stack.names
-      names = []
-      for name in tmpnames
-            if name =~ /NERD_tree/ or name =~ /MRU_Files/
-              next
-            end
-            names.push(name)
-      end
+      names = $buffer_stack.names
       items = names.inject([]) { |array, name|
         key = if VIM::exists?("g:LustyJugglerShowKeys")
                 case VIM::evaluate("g:LustyJugglerShowKeys").to_s

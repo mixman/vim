@@ -112,7 +112,7 @@ endfunction
 
 " no need for a separate .gvimrc
 if has('gui_running')
-colorscheme vimsidian " custom pretty color scheme!
+colorscheme grb3
 set number " show line numbers
 set lines=60 " new gvim windows are 100x60
 set columns=150
@@ -268,8 +268,8 @@ inoremap <right> <nop>
 " cursors for most-used navigation
 map <left> <C-w>h
 map <right> <C-W>l
-map <up> <C-b>\|zz
-map <down> <C-f>\|zz
+map <C-b> <C-b>\|zz
+map <C-f> <C-f>\|zz
 
 function! CleanClose(tosave)
 if (a:tosave == 1)
@@ -307,3 +307,69 @@ augroup QFixToggle
  autocmd BufWinLeave * if exists("g:qfix_win") && expand("<abuf>") == g:qfix_win | unlet! g:qfix_win | endif
 augroup END
 map <F1> :QFix<CR>
+
+
+" tests
+function! RunAllTests(args)
+    silent ! echo
+    silent ! echo -e "\033[1;36mRunning all unit tests\033[0m"
+    silent w
+    exec "make!" . a:args
+endfunction
+
+function! JumpToError()
+    if getqflist() != []
+        for error in getqflist()
+            if error['valid']
+                break
+            endif
+        endfor
+        let error_message = substitute(error['text'], '^ *', '', 'g')
+        silent cc!
+        exec ":sbuffer " . error['bufnr']
+        call RedBar()
+        echo error_message
+    else
+        call GreenBar()
+        echo "All tests passed"
+    endif
+endfunction
+
+function! JumpNoNo()
+    if getqflist() != []
+        for error in getqflist()
+            if error['valid']
+                break
+            endif
+        endfor
+        let error_message = substitute(error['text'], '^ *', '', 'g')
+        call RedBar()
+        echo error_message
+    else
+        call GreenBar()
+        echo "All tests passed"
+    endif
+endfunction
+
+function! RedBar()
+    hi RedBar ctermfg=white ctermbg=red guibg=red
+    echohl RedBar
+    echon repeat(" ",&columns - 1)
+    echohl
+endfunction
+
+function! GreenBar()
+    hi GreenBar ctermfg=white ctermbg=green guibg=green
+    echohl GreenBar
+    echon repeat(" ",&columns - 1)
+    echohl
+endfunction
+
+function! JumpToTestsForClass()
+    exec 'e ' . TestFileForCurrentClass()
+endfunction
+
+"nnoremap <leader>t :call RunAllTests('')<cr>:redraw<cr>:call JumpToError()<cr>
+nnoremap <leader>y :call RunAllTests('')<cr>:redraw<cr>:call JumpNoNo()<cr>
+
+set makeprg=python\ -m\ nose.core\ --machine-out
