@@ -14,6 +14,9 @@ syntax on
 let python_highlight_numbers = 1
 let python_highlight_builtins = 1
 let python_highlight_exceptions = 1
+autocmd BufRead,BufNewFile *.py syntax on
+autocmd BufRead,BufNewFile *.py set ai
+autocmd BufRead *.py set smartindent cinwords=if,elif,else,for,while,with,try,except,finally,def,class
 
 " kill error bells entirely
 set noerrorbells
@@ -44,9 +47,9 @@ set wildmode=list:longest
 set tabstop=4
 set shiftwidth=4
 set softtabstop=4
+set expandtab
 
 set autoindent
-set smartindent
 
 " in Ruby and Scala, we use spaces (two) instead of tabs
 au BufRead,BufNewFile *.rb,*.scala set et sw=2 sts=2 ts=8
@@ -84,31 +87,6 @@ set directory=/tmp//
 set nobackup
 set nowb
 set noswapfile
-
-" up/down move between visual lines instead of actual lines when wrapped
-imap <silent> <Down> <C-o>gj
-imap <silent> <Up> <C-o>gk
-nmap <silent> <Down> gj
-nmap <silent> <Up> gk
-
-" autocompletes parens/brackets
-"inoremap ( ()<Left>
-"inoremap [ []<Left>
-"inoremap ( ()<Esc>:let leavechar=")"<CR>
-
-" autocomplete quotes intelligently
-" stolen from somewhere, although I don't remember where.
-"inoremap	'  '<Esc>:call QuoteInsertionWrapper("'")<CR>a
-"inoremap	"  "<Esc>:call QuoteInsertionWrapper('"')<CR>a
-"inoremap	`  `<Esc>:call QuoteInsertionWrapper('`')<CR>a
-
-function! QuoteInsertionWrapper (quote)
-let col = col('.')
-if getline('.')[col-2] !~ '\k' && getline('.')[col] !~ '\k'
-	normal ax
-	exe "normal r".a:quote."h"
-end
-endfunction
 
 " no need for a separate .gvimrc
 if has('gui_running')
@@ -210,7 +188,7 @@ imap <C-V> <ESC><C-V>i
 vmap <C-C> "+y
 command! -nargs=+ Grr execute 'silent grep! -r --exclude=*.pyc --exclude=tags --exclude-dir=*.svn <args> *' | copen 33
 map ,b :LustyJuggler<CR>
-"autocmd FileType python set omnifunc=pythoncomplete#Complete
+autocmd FileType python set omnifunc=pythoncomplete#Complete
 "autocmd FileType python set omnifunc=pysmell#Complete
 autocmd FileType php set omnifunc=phpcomplete#CompletePHP
 set tags=./tags;/
@@ -255,22 +233,6 @@ for p in sys.path:
 EOF
 set tags+=$HOME/.vim/tags/python.ctags
 let g:SuperTabDefaultCompletionType = "context"
-
-" disables cursor keys
-nnoremap <up> <nop>
-nnoremap <down> <nop>
-nnoremap <left> <nop>
-nnoremap <right> <nop>
-inoremap <up> <nop>
-inoremap <down> <nop>
-inoremap <left> <nop>
-inoremap <right> <nop>
-
-" cursors for most-used navigation
-map <left> <C-w>h
-map <right> <C-W>l
-map <C-b> <C-b>\|zz
-map <C-f> <C-f>\|zz
 
 function! CleanClose(tosave)
 if (a:tosave == 1)
