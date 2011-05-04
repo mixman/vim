@@ -40,8 +40,6 @@ set gdefault   " assume the /g flag on :s substitutions to replace all matches i
 
 " autocomplete when opening files. behaves somewhat similarly to bash.
 set wildignore=*.bak,*.swp,*.pyc,*.o,*.obj,*.dll,*.exe,*.gif,*.png,*.jpg,*.jpeg
-set wildmenu
-set wildmode=list:longest
 
 " by default, use tabs, display tabstabs are four spaces, and we use tabs
 set tabstop=4
@@ -216,6 +214,7 @@ nmap <leader>2 g]
 ":au BufWinEnter * let w:m2=matchadd('ErrorMsg', '\%>80v.\+', -1)
 
 " Improve Vim's Command Line Autocompletion
+set wildmenu
 set wildmode=list:longest,full
 set infercase
 set completeopt=longest,menu,menuone
@@ -334,3 +333,4 @@ endfunction
 nnoremap <leader>y :call RunAllTests('')<cr>:redraw<cr>:call JumpNoNo()<cr>
 
 set makeprg=python\ -m\ nose.core\ --machine-out
+
