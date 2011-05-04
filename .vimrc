@@ -90,26 +90,26 @@ set noswapfile
 
 " no need for a separate .gvimrc
 if has('gui_running')
-colorscheme grb3
-set number " show line numbers
-set lines=60 " new gvim windows are 100x60
-set columns=150
-set guioptions-=m  " hide the menu bar
-set guioptions-=T  " hide the toolbar
-set guioptions-=r  " hide the right-hand scroll bar
-set guioptions-=l  " hide the left-hand scroll bar
-" shows/hides menu bar on Ctrl-F1
-nnoremap <C-F1> :if &go=~#'m'<Bar>set go-=m<Bar>else<Bar>set go+=m<Bar>endif<CR>
-set listchars=tab:»·,trail:⋅,nbsp:⋅
-if has('gui_gtk2')
-    set guifont=Monospace\ 10
-    set cmdheight=2
-end
-if has('gui_macvim')
-    set noantialias
-    set guifont=Andale\ Mono:h13
-    set cmdheight=3 " (sub-optimal) removes many press ENTER to continue prompts
-end
+    colorscheme solarized
+    set number " show line numbers
+    set lines=60 " new gvim windows are 100x60
+    set columns=150
+    set guioptions-=m  " hide the menu bar
+    set guioptions-=T  " hide the toolbar
+    set guioptions-=r  " hide the right-hand scroll bar
+    set guioptions-=l  " hide the left-hand scroll bar
+    " shows/hides menu bar on Ctrl-F1
+    nnoremap <C-F1> :if &go=~#'m'<Bar>set go-=m<Bar>else<Bar>set go+=m<Bar>endif<CR>
+    set listchars=tab:»·,trail:⋅,nbsp:⋅
+    if has('gui_gtk2')
+        set guifont=Monospace\ 10
+        set cmdheight=2
+    end
+    if has('gui_macvim')
+        set noantialias
+        set guifont=Andale\ Mono:h13
+        set cmdheight=3 " (sub-optimal) removes many press ENTER to continue prompts
+    end
 endif
 
 " my settings
@@ -221,8 +221,7 @@ set infercase
 set completeopt=longest,menu,menuone
 set wildignore+=*.o,*.obj,*.pyc,*.DS_STORE,*.db,*.swc
 
-
-"python
+" http://vim.wikia.com/wiki/Automatically_add_Python_paths_to_Vim_path 
 python << EOF
 import os
 import sys
@@ -232,7 +231,6 @@ for p in sys.path:
         vim.command(r"set path+=%s" % (p.replace(" ", r"\ ")))
 EOF
 set tags+=$HOME/.vim/tags/python.ctags
-let g:SuperTabDefaultCompletionType = "context"
 
 function! CleanClose(tosave)
 if (a:tosave == 1)
