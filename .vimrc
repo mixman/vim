@@ -27,9 +27,7 @@ set history=100
 set ruler
 set showmatch
 runtime macros/matchit.vim " matches if/elseif/else as well as brackets
-
 set scrolloff=999 " scroll before reaching the edge of the 9age
-
 set lbr " wraps at words instead of at characters
 
 " stuff for searching
@@ -40,14 +38,18 @@ set gdefault   " assume the /g flag on :s substitutions to replace all matches i
 
 " autocomplete when opening files. behaves somewhat similarly to bash.
 set wildignore=*.bak,*.swp,*.pyc,*.o,*.obj,*.dll,*.exe,*.gif,*.png,*.jpg,*.jpeg
+set wildmenu
+set wildmode=list:longest,full
+set infercase
+set completeopt=longest,menu,menuone
+set wildignore+=*.o,*.obj,*.pyc,*.DS_STORE,*.db,*.swc
 
 " by default, use tabs, display tabstabs are four spaces, and we use tabs
 set tabstop=4
 set shiftwidth=4
 set softtabstop=4
-set expandtab
-
 set autoindent
+set expandtab
 
 " in Ruby and Scala, we use spaces (two) instead of tabs
 au BufRead,BufNewFile *.rb,*.scala set et sw=2 sts=2 ts=8
@@ -61,23 +63,7 @@ au BufRead,BufNewFile *.css,*.c,*.java,*.html*,*.js set noet sw=4 sts=4 ts=4
 " new HTML files get automatic boilerplate
 au BufNewFile *.html 0r ~/.vim/templates/template.html
 
-" refresh Firefox on Vim save (requires MozRepl installed/running)
-au BufWriteCmd *.html,*.css :call Refresh_firefox()
-
-function! Refresh_firefox()
-if &modified
-write
-silent !echo  'vimYo = content.window.pageYOffset;
-			 \ vimXo = content.window.pageXOffset;
-			 \ BrowserReload();
-			 \ content.window.scrollTo(vimXo,vimYo);
-			 \ repl.quit();'  |
-			 \ nc localhost 4242 2>&1 > /dev/null
-endif
-endfunction
-
 " backups and swap files go in .vim
-"
 " ending with the double slash includes the full path in the filename
 " of the swap files to avoid conflicts
 set backupdir=/tmp//
@@ -86,11 +72,10 @@ set nobackup
 set nowb
 set noswapfile
 
-" no need for a separate .gvimrc
 if has('gui_running')
-    colorscheme solarized
+    set background=dark
+    colorscheme solarized 
     set number " show line numbers
-    set lines=60 " new gvim windows are 100x60
     set columns=150
     set guioptions-=m  " hide the menu bar
     set guioptions-=T  " hide the toolbar
@@ -105,7 +90,7 @@ if has('gui_running')
     end
     if has('gui_macvim')
         set noantialias
-        set guifont=Andale\ Mono:h13
+        set guifont=Andale\ Mono:h12
         set cmdheight=3 " (sub-optimal) removes many press ENTER to continue prompts
     end
 endif
@@ -114,6 +99,7 @@ endif
 map <C-Tab> :NERDTreeToggle<CR>
 set list
 let mapleader = ","
+map <leader>cd :cd %:p:h<CR>
 " Maps for jj to act as Esc
 ino jj <esc>
 cno jj <c-c>
@@ -126,17 +112,23 @@ map <S-l> $
 set statusline=%F%m%r%h%w\ [%{&ff}]\ %y\ [%l/%L--%c]\ [%p%%]
 set laststatus=2 
 set scrolloff=10
+set relativenumber
+set lines=999 " start fullscreen
+
+" gitv
+nmap <leader>gv :Gitv --all<cr>
+nmap <leader>gV :Gitv! --all<cr>
+highlight diffAdded guifg=#00bf00
+highlight diffRemoved guifg=#bf0000
 
 let g:LustyJugglerSuppressRubyWarning = 1
 let g:LustyJugglerShowKeys = 1
+map ,b :LustyJuggler<CR>
 
-" ,v brings up my .vimrc
+" ,v brings up .vimrc
 " ,V reloads it -- making all changes active (have to save first)
 map <leader>v :sp ~/.vimrc<CR><C-W>_
 map <silent> <leader>V :source ~/.vimrc<CR>:filetype detect<CR>:exe ":echo 'vimrc reloaded'"<CR>
-
-" highlight all occurences of word under cursor
-"autocmd CursorMoved * silent! exe printf('match IncSearch /\<%s\>/', expand('<cword>'))
 
 " taglist
 nnoremap <silent> <F4> :TlistToggle<CR>
@@ -154,38 +146,26 @@ let Tlist_Close_On_Select = 1
 let Tlist_Enable_Fold_Column = 0 " Don't Show the fold indicator column in the taglist window.
 let Tlist_Sort_Type = "name"
 
-" window navigation, full-size>_ to expand to fullsize 
-nmap <C-j> <C-W>j<C-W>_
-nmap <C-k> <C-W>k<C-W>_
-nmap <C-l> <C-W>l<C-W>_
-nmap <C-h> <C-W>h<C-W>_
-
 " Y yanks to the end of the line
 nmap Y y$
-
-" shortcuts for copying to clipboard
 nmap <leader>y "+y
-
 " copy the current line to the clipboard
 nmap <leader>Y "+yy
 nmap <leader>p "+p
 
-" complete on ctrl-l
+" omnicomplete on ctrl-l
 inoremap <C-l> <C-x><C-o>
 set complete+=.
 set complete+=k
 set complete+=b
 set complete+=t
-
 set completeopt+=menuone,longest
-
 set ofu=syntaxcomplete#Complete
 
 nmap <C-V> "+gP
 imap <C-V> <ESC><C-V>i
 vmap <C-C> "+y
 command! -nargs=+ Grr execute 'silent grep! -r --exclude=*.pyc --exclude=tags --exclude-dir=*.svn <args> *' | copen 33
-map ,b :LustyJuggler<CR>
 autocmd FileType python set omnifunc=pythoncomplete#Complete
 "autocmd FileType python set omnifunc=pysmell#Complete
 autocmd FileType php set omnifunc=phpcomplete#CompletePHP
@@ -197,30 +177,13 @@ if &diff
 	nmap <C-h> <C-W>h
 endif
 
-" diff
-noremap <F5> :call Svndiff("prev")<CR> 
-noremap <F6> :call Svndiff("next")<CR> 
-noremap <F7> :call Svndiff("clear")<CR> 
-noremap <F8> :VCSVimDiff<CR>
-
 noremap <F2> :Mru<CR>
 
 map <leader>r <Plug>TaskList
-nmap 9 <End>
 nmap <leader>1 <C-]>
 nmap <leader>2 g]
 
-" highlight lines over 80 columns
-":au BufWinEnter * let w:m2=matchadd('ErrorMsg', '\%>80v.\+', -1)
-
-" Improve Vim's Command Line Autocompletion
-set wildmenu
-set wildmode=list:longest,full
-set infercase
-set completeopt=longest,menu,menuone
-set wildignore+=*.o,*.obj,*.pyc,*.DS_STORE,*.db,*.swc
-
-" http://vim.wikia.com/wiki/Automatically_add_Python_paths_to_Vim_path 
+" http://vim.wikia.com/wiki/Automatically_add_Python_paths_to_Vim_path
 python << EOF
 import os
 import sys
@@ -333,4 +296,3 @@ endfunction
 nnoremap <leader>y :call RunAllTests('')<cr>:redraw<cr>:call JumpNoNo()<cr>
 
 set makeprg=python\ -m\ nose.core\ --machine-out
-
