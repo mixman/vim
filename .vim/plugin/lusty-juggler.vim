@@ -1,4 +1,4 @@
-"    Copyright: Copyright (C) 2008-2010 Stephen Bach
+"    Copyright: Copyright (C) 2008-2011 Stephen Bach
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
 "               notice is copied with it. Like anything else that's free,
@@ -10,26 +10,26 @@
 " Name Of File: lusty-juggler.vim
 "  Description: Dynamic Buffer Switcher Vim Plugin
 "   Maintainer: Stephen Bach <this-file@sjbach.com>
-" Contributors: Juan Frias, Bartosz Leper, Marco Barberis
+" Contributors: Juan Frias, Bartosz Leper, Marco Barberis, Vincent Driessen,
+"               Martin Wache, Johannes Holzfuß, Adam Rutkowski, Carlo Teubner
 "
-" Release Date: June 2, 2010
-"      Version: 1.1.4
+" Release Date: April 29, 2011
+"      Version: 1.3
 "
-"        Usage: To launch the juggler:
-"
-"                 <Leader>lj
+"        Usage:
+"                 <Leader>lj  - Opens the buffer juggler.
 "
 "               You can also use this command:
 "
 "                 ":LustyJuggler"
 "
-"               (Personally, I map this to ,g)
+"               (Personally, I map this to ,j)
 "
-"               When the juggler launches, the command bar at bottom is
-"               replaced with a new bar showing the names of your currently
-"               opened buffers in most-recently-used order.
+"               When launched, the command bar at bottom is replaced with a
+"               new bar showing the names of currently-opened buffers in
+"               most-recently-used order.
 "
-"               The buffer names are mapped to these keys:
+"               The buffers are mapped to these keys:
 "
 "                   1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th
 "                   ----------------------------------------
@@ -44,7 +44,7 @@
 "               or press "<ENTER>".  Alternatively, press one of the other
 "               mapped keys to highlight another buffer.
 "
-"               To display the key before the name of the buffer, add one of
+"               To display the key with the name of the buffer, add one of
 "               the following lines to your .vimrc:
 "
 "                 let g:LustyJugglerShowKeys = 'a'   (for alpha characters)
@@ -53,23 +53,39 @@
 "               To cancel the juggler, press any of "q", "<ESC>", "<C-c",
 "               "<BS>", "<Del>", or "<C-h>".
 "
+"               LustyJuggler can act very much like <A-Tab> window switching.
+"               To enable this mode, add the following line to your .vimrc:
+"
+"                 let g:LustyJugglerAltTabMode = 1
+"
+"               Then, given the following mapping:
+"
+"                 noremap <silent> <A-s> :LustyJuggler<CR>
+"
+"               Pressing "<A-s>" will launch the LustyJuggler with the
+"               previous buffer highlighted. Typing "<A-s>" again will cycle
+"               to the next buffer (in most-recently used order), and
+"               "<ENTER>" will open the highlighted buffer.  For example, the
+"               sequence "<A-s><Enter>" will open the previous buffer, and
+"               "<A-s><A-s><Enter>" will open the buffer used just before the
+"               previous buffer, and so on.
 "
 "        Bonus: This plugin also includes the following command, which will
 "               immediately switch to your previously used buffer:
 "
 "                 ":LustyJugglePrevious"
-"               
-"               This is similar to the :b# command, but accounts for the
-"               common situation where your previously used buffer (#) has
+"
+"               This is similar to the ":b#" command, but accounts for the
+"               common situation where the previously used buffer (#) has
 "               been killed and is thus inaccessible.  In that case, it will
-"               instead switch to the buffer used previous to the killed
-"               buffer (and on down the line).
-"               
+"               instead switch to the buffer used before that one (and on down
+"               the line if that buffer has been killed too).
+"
 "
 " Install Details:
 "
-" Copy this file into your $HOME/.vim/plugin directory so that it will be
-" sourced on startup automatically.
+" Copy this file into $HOME/.vim/plugin directory so that it will be sourced
+" on startup automatically.
 "
 " Note! This plugin requires Vim be compiled with Ruby interpretation.  If you
 " don't know if your build of Vim has this functionality, you can check by
@@ -87,10 +103,19 @@
 "
 "   let g:LustyJugglerSuppressRubyWarning = 1
 "
+"
+" Contributing:
+"
+" Patches and suggestions welcome.  Note: lusty-juggler.vim is a generated
+" file; if you'd like to submit a patch, check out the Github development
+" repository:
+"
+"    http://github.com/sjbach/lusty
+"
+"
 " GetLatestVimScripts: 2050 1 :AutoInstall: lusty-juggler.vim
 "
 " TODO:
-" - save and restore mappings
 " - Add TAB recognition back.
 " - Add option to open buffer immediately when mapping is pressed (but not
 "   release the juggler until the confirmation press).
@@ -129,7 +154,7 @@ if !has("ruby")
   if !exists("g:LustyExplorerSuppressRubyWarning") ||
       \ g:LustyExplorerSuppressRubyWarning == "0"
   if !exists("g:LustyJugglerSuppressRubyWarning") ||
-      \ g:LustyJugglerSuppressRubyWarning == "0" 
+      \ g:LustyJugglerSuppressRubyWarning == "0"
     echohl ErrorMsg
     echon "Sorry, LustyJuggler requires ruby.  "
     echon "Here are some tips for adding it:\n"
@@ -190,28 +215,32 @@ nmap <silent> <Leader>lj :LustyJuggler<CR>
 
 " Vim-to-ruby function calls.
 function! s:LustyJugglerStart()
-  ruby Lusty::profile() { $lusty_juggler.run }
+  ruby LustyJ::profile() { $lusty_juggler.run }
 endfunction
 
 function! s:LustyJugglerKeyPressed(code_arg)
-  ruby Lusty::profile() { $lusty_juggler.key_pressed }
+  ruby LustyJ::profile() { $lusty_juggler.key_pressed }
 endfunction
 
 function! s:LustyJugglerCancel()
-  ruby Lusty::profile() { $lusty_juggler.cleanup }
+  ruby LustyJ::profile() { $lusty_juggler.cleanup }
 endfunction
 
 function! s:LustyJugglePreviousRun()
-  ruby Lusty::profile() { $buffer_stack.juggle_previous }
+  ruby LustyJ::profile() { $lj_buffer_stack.juggle_previous }
 endfunction
 
 " Setup the autocommands that handle buffer MRU ordering.
 augroup LustyJuggler
   autocmd!
-  autocmd BufEnter * ruby Lusty::profile() { $buffer_stack.push }
-  autocmd BufDelete * ruby Lusty::profile() { $buffer_stack.pop }
-  autocmd BufWipeout * ruby Lusty::profile() { $buffer_stack.pop }
+  autocmd BufEnter * ruby LustyJ::profile() { $lj_buffer_stack.push }
+  autocmd BufDelete * ruby LustyJ::profile() { $lj_buffer_stack.pop }
+  autocmd BufWipeout * ruby LustyJ::profile() { $lj_buffer_stack.pop }
 augroup End
+
+" Used to work around a flaw in Vim's ruby bindings.
+let s:maparg_holder = 0
+let s:maparg_dict_holder = { }
 
 ruby << EOF
 
@@ -240,7 +269,7 @@ module VIM
     when Fixnum
       var == 0
     else
-      Lusty::assert(false, "unexpected type: #{var.class}")
+      LustyJ::assert(false, "unexpected type: #{var.class}")
     end
   end
 
@@ -258,6 +287,11 @@ module VIM
 
   def self.has_syntax?
     nonzero? evaluate('has("syntax")')
+  end
+
+  def self.has_ext_maparg?
+    # The 'dict' parameter to mapargs() was introduced in Vim 7.3.32
+    nonzero? evaluate('v:version > 703 || (v:version == 703 && has("patch32"))')
   end
 
   def self.columns
@@ -287,8 +321,9 @@ module VIM
   end
 
   def self.filename_escape(s)
-    # Escape slashes, open square braces, spaces, sharps, and double quotes.
-    s.gsub(/\\/, '\\\\\\').gsub(/[\[ #"]/, '\\\\\0')
+    # Escape slashes, open square braces, spaces, sharps, double quotes and
+    # percent signs.
+    s.gsub(/\\/, '\\\\\\').gsub(/[\[ #"%]/, '\\\\\0')
   end
 
   def self.regex_escape(s)
@@ -298,6 +333,20 @@ module VIM
   class Buffer
     def modified?
       VIM::nonzero? VIM::evaluate("getbufvar(#{number()}, '&modified')")
+    end
+
+    def listed?
+      VIM::nonzero? VIM::evaluate("getbufvar(#{number()}, '&buflisted')")
+    end
+
+    def self.obj_for_bufnr(n)
+      # There's gotta be a better way to do this...
+      (0..VIM::Buffer.count-1).each do |i|
+        obj = VIM::Buffer[i]
+        return obj if obj.number == n
+      end
+
+      return nil
     end
   end
 
@@ -318,9 +367,25 @@ module VIM
   end
 end
 
+# Hack for wide CJK characters.
+if VIM::exists?("*strwidth")
+  module VIM
+    def self.strwidth(s)
+      # strwidth() is defined in Vim 7.3.
+      evaluate("strwidth('#{single_quote_escape(s)}')").to_i
+    end
+  end
+else
+  module VIM
+    def self.strwidth(s)
+      s.length
+    end
+  end
+end
+
 
 # Utility functions.
-module Lusty
+module LustyJ
 
   unless const_defined? "MOST_POSITIVE_FIXNUM"
     MOST_POSITIVE_FIXNUM = 2**(0.size * 8 -2) -1
@@ -354,6 +419,21 @@ module Lusty
     rescue ArgumentError
       s
     end
+  end
+
+  def self.longest_common_prefix(paths)
+    prefix = paths[0]
+    paths.each do |path|
+      for i in 0...prefix.length
+        if path.length <= i or prefix[i] != path[i]
+          prefix = prefix[0...i]
+          prefix = prefix[0..(prefix.rindex('/') or -1)]
+          break
+        end
+      end
+    end
+
+    prefix
   end
 
   def self.ready_for_read?(io)
@@ -418,7 +498,7 @@ module Lusty
 end
 
 
-module Lusty
+module LustyJ
 class LustyJuggler
   private
     @@KEYS = { "a" => 1,
@@ -450,13 +530,19 @@ class LustyJuggler
     end
 
     def run
-      return if @running
-
-      if $buffer_stack.length <= 1
+      if $lj_buffer_stack.length <= 1
         VIM::pretty_msg("PreProc", "No other buffers")
         return
       end
 
+      # If already running, highlight next buffer
+      if @running and LustyJuggler::alt_tab_mode_active?
+        @last_pressed = (@last_pressed % $lj_buffer_stack.length) + 1;
+        print_buffer_list(@last_pressed)
+        return
+      end
+
+      return if @running
       @running = true
 
       # Need to zero the timeout length or pressing 'g' will hang.
@@ -469,23 +555,27 @@ class LustyJuggler
       VIM::set_option 'noshowcmd'
       VIM::set_option 'noshowmode'
 
+      @key_mappings_map = Hash.new { |hash, k| hash[k] = [] }
+
       # Selection keys.
       @@KEYS.keys.each do |c|
-        VIM::command "noremap <silent> #{c} :call <SID>LustyJugglerKeyPressed('#{c}')<CR>"
+        map_key(c, ":call <SID>LustyJugglerKeyPressed('#{c}')<CR>")
       end
       # Can't use '<CR>' as an argument to :call func for some reason.
-      VIM::command "noremap <silent> <CR>  :call <SID>LustyJugglerKeyPressed('ENTER')<CR>"
-      #VIM::command "noremap <silent> <Tab>  :call <SID>LustyJugglerKeyPressed('TAB')<CR>"
+      map_key("<CR>", ":call <SID>LustyJugglerKeyPressed('ENTER')<CR>")
+      map_key("<Tab>", ":call <SID>LustyJugglerKeyPressed('TAB')<CR>")
 
       # Cancel keys.
-      VIM::command "noremap <silent> q     :call <SID>LustyJugglerCancel()<CR>"
-      VIM::command "noremap <silent> <Esc> :call <SID>LustyJugglerCancel()<CR>"
-      VIM::command "noremap <silent> <C-c> :call <SID>LustyJugglerCancel()<CR>"
-      VIM::command "noremap <silent> <BS>  :call <SID>LustyJugglerCancel()<CR>"
-      VIM::command "noremap <silent> <Del> :call <SID>LustyJugglerCancel()<CR>"
-      VIM::command "noremap <silent> <C-h> :call <SID>LustyJugglerCancel()<CR>"
+      map_key("i", ":call <SID>LustyJugglerCancel()<CR>")
+      map_key("q", ":call <SID>LustyJugglerCancel()<CR>")
+      map_key("<Esc>", ":call <SID>LustyJugglerCancel()<CR>")
+      map_key("<C-c>", ":call <SID>LustyJugglerCancel()<CR>")
+      map_key("<BS>", ":call <SID>LustyJugglerCancel()<CR>")
+      map_key("<Del>", ":call <SID>LustyJugglerCancel()<CR>")
+      map_key("<C-h>", ":call <SID>LustyJugglerCancel()<CR>")
 
-      print_buffer_list()
+      @last_pressed = 2 if LustyJuggler::alt_tab_mode_active?
+      print_buffer_list(@last_pressed)
     end
 
     def key_pressed()
@@ -493,12 +583,12 @@ class LustyJuggler
 
       if @last_pressed.nil? and c == 'ENTER'
         cleanup()
-      elsif @last_pressed and (c == @last_pressed or c == 'ENTER')
-        choose(@@KEYS[@last_pressed])
+      elsif @last_pressed and (@@KEYS[c] == @last_pressed or c == 'ENTER')
+        choose(@last_pressed)
         cleanup()
       else
-        print_buffer_list(@@KEYS[c])
-        @last_pressed = c
+        @last_pressed = @@KEYS[c]
+        print_buffer_list(@last_pressed)
       end
     end
 
@@ -512,17 +602,18 @@ class LustyJuggler
       VIM::set_option "showmode" if @showmode
 
       @@KEYS.keys.each do |c|
-        VIM::command "unmap <silent> #{c}"
+        unmap_key(c)
       end
-      VIM::command "unmap <silent> <CR>"
-      #VIM::command "unmap <silent> <Tab>"
+      unmap_key("<CR>")
+      unmap_key("<Tab>")
 
-      VIM::command "unmap <silent> q"
-      VIM::command "unmap <silent> <Esc>"
-      VIM::command "unmap <silent> <C-c>"
-      VIM::command "unmap <silent> <BS>"
-      VIM::command "unmap <silent> <Del>"
-      VIM::command "unmap <silent> <C-h>"
+      unmap_key("i")
+      unmap_key("q")
+      unmap_key("<Esc>")
+      unmap_key("<C-c>")
+      unmap_key("<BS>")
+      unmap_key("<Del>")
+      unmap_key("<C-h>")
 
       @running = false
       VIM::message ''
@@ -530,6 +621,11 @@ class LustyJuggler
     end
 
   private
+    def self.alt_tab_mode_active?
+       return (VIM::exists?("g:LustyJugglerAltTabMode") and
+               VIM::evaluate("g:LustyJugglerAltTabMode").to_i != 0)
+    end
+
     def print_buffer_list(highlighted_entry = nil)
       # If the user pressed a key higher than the number of open buffers,
       # highlight the highest (see also BufferStack.num_at_pos()).
@@ -537,7 +633,7 @@ class LustyJuggler
       @name_bar.selected_buffer = \
         if highlighted_entry
           # Correct for zero-based array.
-          [highlighted_entry, $buffer_stack.length].min - 1
+          [highlighted_entry, $lj_buffer_stack.length].min - 1
         else
           nil
         end
@@ -546,15 +642,60 @@ class LustyJuggler
     end
 
     def choose(i)
-      buf = $buffer_stack.num_at_pos(i)
+      buf = $lj_buffer_stack.num_at_pos(i)
       VIM::command "b #{buf}"
+    end
+
+    def map_key(key, action)
+      ['n','v','o','i','c','l'].each do |mode|
+        VIM::command "let s:maparg_holder = maparg('#{key}', '#{mode}')"
+        if VIM::evaluate_bool("s:maparg_holder != ''")
+          orig_rhs = VIM::evaluate("s:maparg_holder")
+          if VIM::has_ext_maparg?
+            VIM::command "let s:maparg_dict_holder = maparg('#{key}', '#{mode}', 0, 1)"
+            nore    = VIM::evaluate_bool("s:maparg_dict_holder['noremap']") ? 'nore'      : ''
+            silent  = VIM::evaluate_bool("s:maparg_dict_holder['silent']")  ? ' <silent>' : ''
+            expr    = VIM::evaluate_bool("s:maparg_dict_holder['expr']")    ? ' <expr>'   : ''
+            buffer  = VIM::evaluate_bool("s:maparg_dict_holder['buffer']")  ? ' <buffer>' : ''
+            restore_cmd = "#{mode}#{nore}map#{silent}#{expr}#{buffer} #{key} #{orig_rhs}"
+          else
+            restore_cmd = "#{mode}noremap <silent> #{key} #{orig_rhs}"
+          end
+          @key_mappings_map[key] << [ mode, restore_cmd ]
+        end
+        VIM::command "#{mode}noremap <silent> #{key} #{action}"
+      end
+    end
+
+    def unmap_key(key)
+      modes_with_mappings_for_key = \
+        { 'n' => false,
+          'v' => false,
+          'o' => false,
+          'i' => false,
+          'c' => false,
+          'l' => false }
+
+      if @key_mappings_map.has_key?(key)
+        @key_mappings_map[key].each do |a|
+          mode, restore_cmd = *a
+          VIM::command restore_cmd
+          modes_with_mappings_for_key[mode] = true
+        end
+      end
+
+      modes_with_mappings_for_key.each_pair do |mode, had_mapping|
+        unless had_mapping
+          VIM::command "#{mode}unmap <silent> #{key}"
+        end
+      end
     end
 end
 end
 
 
 # An item (delimiter/separator or buffer name) on the NameBar.
-module Lusty
+module LustyJ
 class BarItem
   def initialize(str, color)
     @str = str
@@ -616,7 +757,7 @@ class BufferItem < BarItem
         slash_color = @@SLASH_COLOR
       end
 
-      pieces = @str.split(File::SEPARATOR, -1) 
+      pieces = @str.split(File::SEPARATOR, -1)
 
       @array = []
       @array << dir_color
@@ -679,7 +820,7 @@ end
 
 
 # A one-line display of the open buffers, appearing in the command display.
-module Lusty
+module LustyJ
 class NameBar
   public
     def initialize
@@ -706,7 +847,8 @@ class NameBar
 
 
     def create_items
-      names = $buffer_stack.names
+      names = $lj_buffer_stack.names(10)
+
       items = names.inject([]) { |array, name|
         key = if VIM::exists?("g:LustyJugglerShowKeys")
                 case VIM::evaluate("g:LustyJugglerShowKeys").to_s
@@ -853,7 +995,7 @@ end
 
 
 # Maintain MRU ordering.
-module Lusty
+module LustyJ
 class BufferStack
   public
     def initialize
@@ -873,13 +1015,27 @@ class BufferStack
       VIM::command "b #{buf}"
     end
 
-    def names
-      # Get the last 10 buffer names by MRU.  Show only as much of
+    def names(n = :all)
+      # Get the last n buffer names by MRU.  Show only as much of
       # the name as necessary to differentiate between buffers of
       # the same name.
       cull!
-      names = @stack.collect { |i| VIM::bufname(i) }.reverse[0,10]
+      names = @stack.collect { |i| VIM::bufname(i) }.reverse
+      if n != :all
+        names = names[0,n]
+      end
       shorten_paths(names)
+    end
+
+    def numbers(n = :all)
+      # Get the last n buffer numbers by MRU.
+      cull!
+      numbers = @stack.reverse
+      if n == :all
+        numbers
+      else
+        numbers[0,n]
+      end
     end
 
     def num_at_pos(i)
@@ -904,11 +1060,14 @@ class BufferStack
 
   private
     def cull!
-      # Remove empty buffers.
-      @stack.delete_if { |x| not VIM::evaluate_bool("bufexists(#{x})") }
+      # Remove empty and unlisted buffers.
+      @stack.delete_if { |x|
+        not (VIM::evaluate_bool("bufexists(#{x})") and
+             VIM::evaluate_bool("getbufvar(#{x}, '&buflisted')"))
+      }
     end
 
-    # STEVE to Lusty:: to be common with explorer
+    # NOTE: very similar to Entry::compute_buffer_entries()
     def shorten_paths(buffer_names)
       # Shorten each buffer name by removing all path elements which are not
       # needed to differentiate a given name from other names.  This usually
@@ -926,7 +1085,7 @@ class BufferStack
       basename_to_prefix = {}
       common_base.each do |k, names|
         if names.length > 1
-          basename_to_prefix[k] = common_prefix(names)
+          basename_to_prefix[k] = LustyJ::longest_common_prefix(names)
         end
       end
 
@@ -938,29 +1097,14 @@ class BufferStack
                : base
       }
     end
-
-    # STEVE to Lusty:: to be common with explorer
-    def common_prefix(paths)
-      prefix = paths[0]
-      for path in paths
-        for i in 0...prefix.length
-          if path.length <= i or prefix[i] != path[i]
-            prefix = prefix[0...i]
-            prefix = prefix[0..(prefix.rindex('/') or -1)]
-            break
-          end
-        end
-      end
-      return prefix
-    end
 end
 
 end
 
 
 
-$lusty_juggler = Lusty::LustyJuggler.new
-$buffer_stack = Lusty::BufferStack.new
+$lusty_juggler = LustyJ::LustyJuggler.new
+$lj_buffer_stack = LustyJ::BufferStack.new
 
 EOF
 
