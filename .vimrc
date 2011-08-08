@@ -34,8 +34,7 @@ set t_vb=
 set history=100
 set ruler
 set showmatch
-runtime macros/matchit.vim " matches if/elseif/else as well as brackets
-set scrolloff=999 " scroll before reaching the edge of the 9age
+"runtime macros/matchit.vim " matches if/elseif/else as well as brackets
 set lbr " wraps at words instead of at characters
 set autoread " refresh changed files automatically
 
@@ -90,19 +89,21 @@ set nowb
 set noswapfile
 
 if has('gui_running')
+    set scrolloff=999 " scroll before reaching the edge of the 9age
     set background=dark
     "colorscheme solarized 
     "set background=light
     colorscheme ir_white
-    set number " show line numbers
     set columns=150
     set guioptions-=m  " hide the menu bar
     set guioptions-=T  " hide the toolbar
     set guioptions-=r  " hide the right-hand scroll bar
     set guioptions-=l  " hide the left-hand scroll bar
+    set guioptions-=L  " hide the left-hand scrollbar for splits/new windows
+    set guioptions-=R  " hide the right-hand scrollbar for splits/new windows
     " shows/hides menu bar on Ctrl-F1
     nnoremap <C-F1> :if &go=~#'m'<Bar>set go-=m<Bar>else<Bar>set go+=m<Bar>endif<CR>
-    set listchars=tab:»·,trail:⋅,nbsp:⋅
+    "set listchars=tab:»·,trail:⋅,nbsp:⋅
     if has('gui_gtk2')
         set guifont=Monospace\ 10
         set cmdheight=2
@@ -110,10 +111,17 @@ if has('gui_running')
     end
     if has('gui_macvim')
         set noantialias
-        set guifont=Andale\ Mono:h12
+        "set guifont=Andale\ Mono:h12
+        set guifont=Andale\ Mono:h14
         set cmdheight=3 " (sub-optimal) removes many press ENTER to continue prompts
     end
+else
+    "set t_Co=256
+    " scrolloff causes flicker on iterm2
+    set scrolloff=0
+    set cmdheight=2
 endif
+set listchars=tab:»·,trail:⋅,nbsp:⋅
 
 " my settings
 map <C-Tab> :NERDTreeToggle<CR>
@@ -131,9 +139,8 @@ map <S-h> ^
 map <S-l> $
 set statusline=%F%m%r%h%w\ [%{&ff}]\ %y\ [%l/%L--%c]\ [%p%%]
 set laststatus=2 
-set scrolloff=10
 set relativenumber
-set lines=999 " start fullscreen
+"set lines=999 " start fullscreen
 
 " fugitive
 " remove old fugitive buffers
@@ -159,21 +166,8 @@ map <leader>b :LustyBufferExplorer<cr>
 map <leader>y :LustyFilesystemExplorer<CR>
 map <leader>u :LustyFilesystemExplorerFromHere<CR>
 
-" taglist
-nnoremap <silent> <F4> :TlistToggle<CR>
-let Tlist_Show_One_File = 1 "show tags of only one file
-" set the names of flags
-let tlist_php_settings = 'php;c:class;f:function;d:constant'
-" close all folds except for current file
-let Tlist_File_Fold_Auto_Close = 1
-" make tlist pane active when opened
-let Tlist_GainFocus_On_ToggleOpen = 1
-" width of window
-let Tlist_WinWidth = 40
-" close tlist when a selection is made
-let Tlist_Close_On_Select = 1
-let Tlist_Enable_Fold_Column = 0 " Don't Show the fold indicator column in the taglist window.
-let Tlist_Sort_Type = "name"
+" tagbar
+nnoremap <silent> <F4> :TagbarToggle<CR>
 
 " Y yanks to the end of the line
 nmap Y y$
@@ -198,7 +192,7 @@ if &diff
 	nmap <C-h> <C-W>h
 endif
 
-noremap <F2> :Mru<CR>
+"noremap <F2> :Mru<CR>
 
 map <leader>r <Plug>TaskList
 nmap <leader>1 <C-]>

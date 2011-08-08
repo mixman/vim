@@ -12,7 +12,7 @@ let g:colors_name = "IR_White"
 
 hi Cursor  guifg=NONE guibg=#a7a7a7 gui=NONE
 hi Visual  guifg=NONE guibg=#e0e0ed gui=NONE
-hi CursorLine  guifg=NONE guibg=#ffffff gui=NONE
+hi CursorLine  guifg=NONE guibg=#cccccc gui=NONE
 hi CursorColumn  guifg=NONE guibg=#ffffff gui=NONE
 hi LineNr  guifg=#808080 guibg=#ffffff gui=NONE
 hi VertSplit  guifg=#cfcfcf guibg=#cfcfcf gui=NONE
@@ -100,3 +100,9 @@ hi cssClassName  guifg=#bc4d00 guibg=NONE gui=NONE
 hi cssValueLength  guifg=#8c008a guibg=NONE gui=NONE
 hi cssCommonAttr  guifg=#582b00 guibg=NONE gui=NONE
 hi cssBraces  guifg=NONE guibg=NONE gui=NONE
+
+highlight DiffAdd term=reverse cterm=reverse ctermfg=64 gui=reverse guifg=#859900
+highlight DiffChange term=reverse cterm=reverse ctermfg=136 gui=reverse guifg=#b58900
+highlight DiffDelete term=reverse cterm=reverse ctermfg=124 gui=reverse guifg=#dc322f
+highlight DiffText term=reverse cterm=reverse ctermfg=33 gui=reverse guifg=#268bd2
+
